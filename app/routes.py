@@ -1,7 +1,9 @@
 # this is my ife project (legit)
 import os
 from app import app
-from flask import render_template, request, redirect
+from flask import render_template, request, redirect, session, url_for
+
+app.secret_key = b'GQ\xe1\x13AT\xbb\x94\xeao\x08~i\x06M\x83'
 # events = [
 #         {"event":"First Day of Classes", "date":"2019-08-21"},
 #         {"event":"Winter Break", "date":"2019-12-20"},
@@ -47,7 +49,7 @@ def name(name):
     # pull data from database
     events = collection.find({"user_name":name}).sort("date", -1)
     # use data
-    return render_template('index.html')
+    return render_template('signup.html')
     
 @app.route('/signup', methods=["GET","POST"])
 def signup():
@@ -55,13 +57,36 @@ def signup():
         users = mongo.db.users
         existing_users = users.find_one({"username":request.form['username']})
         if existing_users is None:
-            users.insert({"username":request.form['username'],"password":request.form})
-            return "Login successful"
+            users.insert({"username":request.form['username'],"password":request.form['password'],"about":request.form['about']})
+            return "Your account has been created"
         else:
-            return "Username unavailable, fool. Log in or pick a new name."
+            return "Username unavailable. Log in or pick a new name."
     else:
         return render_template('signup.html')
-    
+
+@app.route('/login', methods=['GET','POST'])
+def login():
+    return render_template('login.html')
+@app.route('/loginpost', methods=['POST'])
+def loginpost():
+    if request.method == ['GET']:
+        return render_template('login.html')
+    else:
+        
+        
+        users = mongo.db.users
+        # use the username to find the account
+        existing_users = users.find_one({"username":request.form['username']})
+        if existing_users:
+            # check if the password is correct
+            if existing_users['password'] == request.form['password']:
+                session['username'] =request.form['username']
+                return redirect(url_for('index'))
+            else:
+                return "Not acceptable"
+        
+        else:
+            return "Try again"
 
 
 
