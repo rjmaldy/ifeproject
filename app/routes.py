@@ -34,7 +34,7 @@ def add():
     # insert new data
     events.insert({"event":"Marieke's Birthday", "date":"2019-02-27"})
     # return a message to the user
-    return "Event added"
+    return render_template('add.html')
 @app.route('/events/new', methods=["GET","POST"])
 def events_new():
     userdata = dict(request.form)
@@ -49,7 +49,7 @@ def name(name):
     # pull data from database
     events = collection.find({"user_name":name}).sort("date", -1)
     # use data
-    return render_template('signup.html')
+    return render_template('index.html')
     
 @app.route('/signup', methods=["GET","POST"])
 def signup():
@@ -58,11 +58,36 @@ def signup():
         existing_users = users.find_one({"username":request.form['username']})
         if existing_users is None:
             users.insert({"username":request.form['username'],"password":request.form['password'],"about":request.form['about']})
-            return "Your account has been created"
+            return "Your form has been submitted"
+            
         else:
             return "Username unavailable. Log in or pick a new name."
     else:
         return render_template('signup.html')
+        
+@app.route('/donate', methods=["GET","POST"])
+def donate():
+    if request.method == "POST":
+        users = mongo.db.users
+        existing_users = users.find_one({"username":request.form['username']})
+        if existing_users is None:
+            users.insert({"username":request.form['username'],"password":request.form['password'],"about":request.form['about']})
+            return "Your form has been submitted. Donate 7 items a week and get a free ticket to family event!"
+        else:
+            return "Oop. Something went wrong"
+    
+    else:
+        return render_template('donate.html') 
+    
+@app.route('/buyers', methods=["GET","POST"])
+def buyers():
+    # connect to the database
+    events = mongo.db.events
+    # insert new data
+    events.insert({"event":"Marieke's Birthday", "date":"2019-02-27"})
+    # return a message to the user
+    return render_template('buyers.html'), "Your form has been submitted"
+        
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -87,6 +112,11 @@ def loginpost():
         
         else:
             return "Try again"
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/')
 
 
 
